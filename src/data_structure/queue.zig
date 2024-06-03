@@ -28,6 +28,9 @@ pub fn Queue(comptime T: type) type {
                 cursor = current.next;
                 self.allocator.destroy(current);
             }
+            self.head = null;
+            self.tail = null;
+            self.length = 0;
         }
 
         pub fn enqueue(self: *Self, value: T) !void {
