@@ -5,18 +5,19 @@ pub fn LinkedList(comptime T: type) type {
         const Self = @This();
 
         const Node = struct {
-            next: ?*Node,
+            next: ?*Node = null,
+            prev: ?*Node = null,
             value: T,
         };
 
         head: ?*Node,
         tail: ?*Node,
         length: usize,
-        alloc: std.mem.Allocator,
+        allocator: std.mem.Allocator,
 
-        pub fn init(alloc: std.mem.Allocator) Self {
+        pub fn init(allocator: std.mem.Allocator) Self {
             return .{
-                .alloc = alloc,
+                .allocator = allocator,
                 .length = 0,
                 .head = null,
                 .tail = null,
@@ -30,32 +31,74 @@ pub fn LinkedList(comptime T: type) type {
             return true;
         }
 
-        pub fn append(self: *Self, value: T) !void {
-            var node = try self.alloc.create(Node);
+        pub fn append(self: *Self, value: T) !*Node {
+            var node = try self.allocator.create(Node);
             node.value = value;
+            node.prev = null;
+            node.next = null;
             self.length += 1;
 
             if (self.head == null) {
                 self.head = node;
                 self.tail = node;
-                return;
+                return node;
             }
 
-            self.tail.?.next = node;
+            if (self.tail) |tail| {
+                tail.next = node;
+                node.prev = tail;
+            }
+
             self.tail = node;
+            return node;
+        }
+
+        pub fn removeNode(self: *Self, node: *Node) void {
+            if (node.prev == null) {
+                self.head = node.next;
+            } else if (node.next == null) {
+                self.tail = node.prev;
+            } else {
+                node.prev.?.next = node.next.?;
+                node.next.?.prev = node.prev.?;
+            }
+            self.allocator.destroy(node);
+        }
+
+        pub fn getAt(self: *Self, index: usize) ?T {
+            if (index == 0 and self.head != null) {
+                return self.head.?.value;
+            }
+            if (index >= self.length) {
+                return null;
+            }
+
+            var cursor = self.head;
+            var cursorIndex = index;
+            while (cursor) |current| : (cursor = current.next) {
+                if (cursorIndex == 0) {
+                    return current.value;
+                }
+                cursorIndex -= 1;
+            }
+            return null;
         }
 
         pub fn clear(self: *Self) void {
-            if (self.head) |head| {
-                self.alloc.destroy(head);
+            var cursor = self.head;
+            while (cursor) |current| {
+                cursor = current.next;
+                self.allocator.destroy(current);
             }
+            self.length = 0;
+            self.head = null;
+            self.tail = null;
         }
 
         pub fn print(self: *Self) !void {
-            const stdout = std.io.getStdOut().writer();
             var currOptional = self.head;
             while (currOptional) |curr| : (currOptional = curr.next) {
-                try stdout.print("- {}", .{curr.value});
+                std.log.info("-> {}", .{curr.value});
             }
         }
     };

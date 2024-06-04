@@ -28,6 +28,23 @@ pub fn main() !void {
     // _ = queue.dequeue();
 }
 
+test "linkedList should behave as a linkedList" {
+    var linkedList = data_structure.LinkedList(u32).init(std.testing.allocator);
+
+    const node1 = try linkedList.append(1);
+    const node2 = try linkedList.append(2);
+    const node3 = try linkedList.append(3);
+
+    linkedList.removeNode(node1);
+
+    const valueAt1 = linkedList.getAt(1) orelse 0;
+
+    try std.testing.expectEqual(@as(u32, 3), valueAt1);
+
+    linkedList.removeNode(node2);
+    linkedList.removeNode(node3);
+}
+
 test "stack should behave as a stack" {
     var stack = data_structure.Stack(u32).init(std.testing.allocator);
 
