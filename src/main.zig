@@ -6,26 +6,35 @@ pub fn main() !void {
     defer _ = gpa.deinit();
 
     const allocator = gpa.allocator();
+    _ = allocator;
 
-    var queue = data_structure.Queue(u32).init(allocator);
-    defer queue.deinit();
+    const stdin = std.io.getStdIn().reader();
+    _ = stdin;
 
-    const teste = queue.peek();
-    std.log.info("Teste Jorge: {?}", .{teste});
+    try printMenu();
+}
 
-    try queue.enqueue(1);
-    try queue.enqueue(2);
+fn printMenu() !void {
+    const stdout = std.io.getStdOut().writer();
+    try stdout.print("---== Main Menu ==---\n", .{});
+    try stdout.print("(1) TicTacToe\n", .{});
 
-    const teste2 = queue.peek();
-    std.log.info("Teste Jorge: {?}", .{teste2});
+    const stdin = std.io.getStdIn().reader();
+    var inputBuf: [4]u8 = undefined;
+    var input: []u8 = undefined;
 
-    try queue.enqueue(3);
+    while (true) {
+        try stdout.print("\nEnter your option: ", .{});
+        if (stdin.readUntilDelimiter(&inputBuf, '\n')) |value| {
+            input = value;
+            break;
+        } else |err| {
+            try stdout.print("\n--> Error Jorge: {!}\n", .{err});
+            continue;
+        }
+    }
 
-    queue.print();
-
-    // _ = queue.dequeue();
-    // _ = queue.dequeue();
-    // _ = queue.dequeue();
+    try stdout.print("\n Value typed: {s}\n", .{input});
 }
 
 test "linkedList should behave as a linkedList" {
