@@ -1,40 +1,67 @@
 const std = @import("std");
 const data_structure = @import("data_structure");
+const utils = @import("utils");
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
-
     const allocator = gpa.allocator();
-    _ = allocator;
 
-    const stdin = std.io.getStdIn().reader();
-    _ = stdin;
-
-    try printMenu();
-}
-
-fn printMenu() !void {
-    const stdout = std.io.getStdOut().writer();
-    try stdout.print("---== Main Menu ==---\n", .{});
-    try stdout.print("(1) TicTacToe\n", .{});
-
-    const stdin = std.io.getStdIn().reader();
-    var inputBuf: [4]u8 = undefined;
-    var input: []u8 = undefined;
+    var userActionBuffer = std.ArrayList(u8).init(allocator);
+    defer userActionBuffer.deinit();
 
     while (true) {
-        try stdout.print("\nEnter your option: ", .{});
-        if (stdin.readUntilDelimiter(&inputBuf, '\n')) |value| {
-            input = value;
+        var userAction = try printMenu(&userActionBuffer);
+        if (std.mem.eql(u8, userAction, "q") or std.mem.eql(u8, userAction, "Q")) {
             break;
-        } else |err| {
-            try stdout.print("\n--> Error Jorge: {!}\n", .{err});
-            continue;
+        }
+
+        if (std.mem.eql(u8, userAction, "1")) {
+            var game = TicTacToe().init(&userActionBuffer);
+            try game.gameLoop();
         }
     }
+}
 
-    try stdout.print("\n Value typed: {s}\n", .{input});
+pub fn TicTacToe() type {
+    return struct {
+        const Self = @This();
+
+        userActionBuffer: *std.ArrayList(u8),
+
+        pub fn init(userActionBuffer: *std.ArrayList(u8)) Self {
+            return .{ .userActionBuffer = userActionBuffer };
+        }
+
+        pub fn gameLoop(self: *Self) !void {
+            _ = self;
+            var counter: u32 = 0;
+            while (true) {
+                const stdout = std.io.getStdOut().writer();
+                // try stdout.print("\x1B[2J\x1B[H", .{});
+                try stdout.print("Game - Tic Tac Toe : Counter: {}\n", .{counter});
+
+                var userAction = try utils.readButtonPress();
+                try stdout.print("User action was: {}\n", .{userAction});
+
+                counter += 1;
+
+                // if (std.mem.eql(u8, userAction, "q") or std.mem.eql(u8, userAction, "Q")) {
+                //     break;
+                // }
+            }
+        }
+    };
+}
+
+fn printMenu(userActionBuffer: *std.ArrayList(u8)) ![]u8 {
+    const stdout = std.io.getStdOut().writer();
+    try stdout.print("\n---== Main Menu ==---\n", .{});
+    try stdout.print("(1) TicTacToe\n", .{});
+    try stdout.print("(q or Q) Quit\n", .{});
+
+    try stdout.print("\nEnter your option: ", .{});
+    return try utils.readUserAction(userActionBuffer);
 }
 
 test "linkedList should behave as a linkedList" {

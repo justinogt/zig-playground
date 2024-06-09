@@ -15,6 +15,10 @@ pub fn build(b: *std.Build) void {
     // set a preferred release mode, allowing the user to decide how to optimize.
     const optimize = b.standardOptimizeOption(.{});
 
+    const utils = b.addModule("utils", .{
+        .source_file = .{ .path = "src/utils/utils.zig" },
+    });
+
     const data_structure = b.addModule("data_structure", .{
         .source_file = .{ .path = "src/data_structure/data_structure.zig" },
     });
@@ -28,6 +32,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    exe.addModule("utils", utils);
     exe.addModule("data_structure", data_structure);
 
     // This declares intent for the executable to be installed into the
