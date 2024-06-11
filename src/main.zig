@@ -34,15 +34,14 @@ pub fn TicTacToe() type {
         }
 
         pub fn gameLoop(self: *Self) !void {
-            _ = self;
             var counter: u32 = 0;
             while (true) {
                 const stdout = std.io.getStdOut().writer();
                 // try stdout.print("\x1B[2J\x1B[H", .{});
                 try stdout.print("Game - Tic Tac Toe : Counter: {}\n", .{counter});
 
-                var userAction = try utils.readButtonPress();
-                try stdout.print("User action was: {}\n", .{userAction});
+                var userAction = try utils.readUserAction(self.userActionBuffer);
+                try stdout.print("User action was: {s}\n", .{userAction});
 
                 counter += 1;
 
@@ -61,7 +60,9 @@ fn printMenu(userActionBuffer: *std.ArrayList(u8)) ![]u8 {
     try stdout.print("(q or Q) Quit\n", .{});
 
     try stdout.print("\nEnter your option: ", .{});
-    return try utils.readUserAction(userActionBuffer);
+    var teste = try utils.readUserAction(userActionBuffer);
+    try stdout.print("\n Jorge: {s}", .{teste});
+    return teste;
 }
 
 test "linkedList should behave as a linkedList" {
